@@ -1,13 +1,15 @@
 package edu.nextstep.camp.calculator
 
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
-import io.mockk.verifySequence
 import org.junit.jupiter.api.DisplayName
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.api.Assertions.assertEquals as assertEquals1
 
 internal class MainPresenterTest {
     private lateinit var presenter: MainContract.Presenter
@@ -121,23 +123,28 @@ internal class MainPresenterTest {
     @Test
     fun deleteLast() {
         // given
+        val expressionSlot = slot<String>()
         presenter = MainPresenter(view, "32 + 1")
+        every { view.showExpression(capture(expressionSlot)) } answers { nothing }
 
         // when
         presenter.deleteLast()
-        presenter.deleteLast()
-        presenter.deleteLast()
-        presenter.deleteLast()
-        presenter.deleteLast()
+        assertEquals1("32 +", expressionSlot.captured)
 
-        // then
-        verifySequence {
-            view.showExpression("32 +")
-            view.showExpression("32")
-            view.showExpression("3")
-            view.showExpression("")
-            view.showExpression("")
-        }
+        presenter.deleteLast()
+        assertEquals1("32", expressionSlot.captured)
+
+        presenter.deleteLast()
+        assertEquals1("3", expressionSlot.captured)
+
+        presenter.deleteLast()
+        assertEquals1("", expressionSlot.captured)
+
+        presenter.deleteLast()
+        assertEquals1("", expressionSlot.captured)
+
+        presenter.deleteLast()
+        assertEquals1("", expressionSlot.captured)
     }
 
     @DisplayName("2 + 3 * 4 / 2 를 계산하면 View 에 10을 그리도록 요청해야 한다.")
